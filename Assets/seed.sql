@@ -30,3 +30,8 @@ insert into org_role values (1, "Software Engineer", 75000.00, 1);
 
 insert into employee values (1, "Andrew", "Moses", 1, 1);
 
+select * from employee 
+left join org_role 
+on employee.org_role_id = org_role.id 
+left join department
+on org_role.department_id = department.id;
