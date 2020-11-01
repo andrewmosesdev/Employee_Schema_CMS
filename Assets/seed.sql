@@ -4,28 +4,25 @@ create database cms_organization;
 
 use cms_organization;
 
-create table department (
+create table departments (
 id int auto_increment not null primary key,
 dept_name varchar(30)
 );
 
-create table org_role (
+create table org_roles (
 id int auto_increment not null primary key,
 title varchar(30),
 salary decimal,
-department_id int references department(id)
+department_id int references departments(id)
 );
 
-create table employee (
+create table employees (
 id int auto_increment not null primary key,
 first_name varchar(30) not null,
 last_name varchar(30) not null,
-org_role_id int references org_role(id),
-manager_id int references employee(id)
+org_role_id int references org_roles(id),
+manager_id int references employees(id)
 );
-
--- test values
-insert into employee (first_name, last_name, org_role_id, manager_id) values ("Andrew", "Moses", 1, 1);
 
 -- select * from employee 
 -- left join org_role 
