@@ -20,8 +20,8 @@ connection.connect(function(err) {
 
 
 const prompts = [
-    // first object to proc
     {
+        // first object to proc
         type: "list",
         name: "initialPrompt",
         message: "What would you like to do?",
@@ -75,7 +75,6 @@ async function runPrompts() {
         }
         else if(answers.viewWhich === "Departments") {
             // show all department names
-            console.log("this worked!")
             viewDepartments();
         }
         else if(answers.viewWhich === "Roles") {
@@ -92,19 +91,21 @@ async function runPrompts() {
         }
         else if(answers.addToChoice === "Roles") {
             // need a function that will add to the "roles" table, maybe add new inquirer prompt
+            addRoles()
         }
         else if(answers.addToChoice === "Employees") {
             // need a function that will add to the "employees" table
+            addEmployees();
         }
     }).catch(error => {
         console.log(error)
     });
 };
 
-async function viewDepartments() {
-     await connection.query("SELECT dept_name FROM departments"), function(err, res) {
+function viewDepartments() {
+     connection.query("SELECT * FROM departments"), function(err, results) {
         if (err) throw err;
-        console.log(res);
+        console.table(results);
         runPrompts();
     }
 };
@@ -133,13 +134,50 @@ async function addDepartments() {
             name: "deptInput",
             message: "Enter the name of the Department you would like to add"
         }
-    ).then(deptName => {
-        connection.query("INSERT INTO departments (dept_name) VALUES (?)", deptName.deptInput, function(err, results) {
+    ).then(answers => {
+        connection.query("INSERT INTO departments (dept_name) VALUES (?)", answers.deptInput, function(err, results) {
             if (err) throw err;
-            console.log(`Added ${deptName.deptInput} to the current list of Departments!`)
-            console.log(results)
+            console.log(`Added ${answers.deptInput} to the current list of Departments!`)
+            // console.log(results)
             runPrompts();
         })
     })
     
+};
+
+async function addRoles() {
+    await inquirer
+    .prompt([
+        {
+            type: "input",
+            name: "roleInput",
+            message: "Enter the title of the Role you would like to add"
+        },
+        {
+            type: "number",
+            name: "salaryInput",
+            message: "Enter the annual salary of the Role you are adding"
+        }
+    ]).then(answers => {
+        connection.query("INSERT INTO org_roles (title, salary) VALUES (?, ?)", [answers.roleInput, answers.salaryInput], function(err, results) {
+            if (err) throw err;
+            console.log(`Added ${answers.roleInput} to the list of current Roles, with a salary of $${answers.salaryInput} per year`);
+            runPrompts();
+        })
+    });
+}
+
+async function addEmployees() {
+    await inquirer
+    .prompt([
+        // need questions for user
+    ]).then(answers => {
+        // need sql syntax for inputs and corresponding answers.whatever
+        connection.query(""), [], function(err, results) {
+            if (err) throw err;
+            // console out response to let the user know what was added
+            console.log();
+            runPrompts();
+        }
+    })
 }
