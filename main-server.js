@@ -161,23 +161,44 @@ async function addRoles() {
     ]).then(answers => {
         connection.query("INSERT INTO org_roles (title, salary) VALUES (?, ?)", [answers.roleInput, answers.salaryInput], function(err, results) {
             if (err) throw err;
-            console.log(`Added ${answers.roleInput} to the list of current Roles, with a salary of $${answers.salaryInput} per year`);
-            runPrompts();
         })
+        console.log(`Added ${answers.roleInput} to the list of current Roles, with a salary of $${answers.salaryInput} per year \n`);
+        runPrompts();
     });
 }
 
 async function addEmployees() {
+
+    // const currentRoles = [];
+    // connection.query("SELECT title FROM org_roles"), function(err, result) {
+    //     if (err) throw err;
+    //     currentRoles.push(result)        
+    // }
     await inquirer
     .prompt([
-        // need questions for user
+        {
+            type: "input",
+            name: "employeeFirstName",
+            message: "Enter the first name of the Employee you would like to add"
+        },
+        {
+            type: "input",
+            name: "employeeLastName",
+            message: "Enter the last name of the Employee you would like to add"
+        },
+        // {
+        //     type: "list",
+        //     name: "newEmployeeRole",
+        //     message: "Which Role does this Employee belong in?",
+        //     choices: currentRoles
+        // }
     ]).then(answers => {
-        // need sql syntax for inputs and corresponding answers.whatever
-        connection.query(""), [], function(err, results) {
+        connection.query("INSERT INTO employees (first_name, last_name) VALUES (?, ?)", [answers.employeeFirstName, answers.employeeLastName], function(err, results) {
             if (err) throw err;
-            // console out response to let the user know what was added
-            console.log();
-            runPrompts();
-        }
-    })
+            
+            
+        })
+        console.log(`Added ${answers.employeeFirstName} ${answers.employeeLastName} to the current list of Employees \n`)
+        runPrompts();
+    });
 }
