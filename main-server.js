@@ -103,14 +103,15 @@ function runPrompts() {
 };
 
 // catch all function for viewing tables made with help from @daneb91
-function viewData(table) {
-    return connection.query(`SELECT * FROM ${table}`, function(err, results) {
+function viewData(paramVar) {
+    return connection.query(`SELECT * FROM ${paramVar}`, function(err, results) {
         if (err) throw err;
         console.table(results);
         runPrompts();
     })
 }
 
+// function to add a department to the database
 function addDepartments() {
     inquirer
     .prompt(
@@ -131,25 +132,45 @@ function addDepartments() {
 };
 
 function addRoles() {
-    inquirer
-    .prompt([
-        {
-            type: "input",
-            name: "roleInput",
-            message: "Enter the title of the Role you would like to add"
-        },
-        {
-            type: "number",
-            name: "salaryInput",
-            message: "Enter the annual salary of the Role you are adding"
-        }
-    ]).then(answers => {
-        connection.query("INSERT INTO org_roles (title, salary) VALUES (?, ?)", [answers.roleInput, answers.salaryInput], function(err, results) {
-            if (err) throw err;
-        })
-        console.log(`Added ${answers.roleInput} to the list of current Roles, with a salary of $${answers.salaryInput} per year \n`);
-        runPrompts();
-    });
+
+    connection.query("SELECT * FROM departments", function(err, results) {
+        if (err) throw err;
+
+        // create variable and use map method to pull results into objects; must use name/value pair in order to be displayed through inquirer
+        const departmentValues = results.map(element => ({
+            name: element.dept_name,
+            value: element.id
+        }));
+        // console.log(departmentValues)
+
+        inquirer
+        .prompt([
+            {
+                type: "input",
+                name: "roleInput",
+                message: "Enter the title of the Role you would like to add"
+            },
+            {
+                type: "number",
+                name: "salaryInput",
+                message: "Enter the annual salary of the Role you are adding"
+            },
+            {
+                type: "list",
+                name: "departmentChoice",
+                message: "Choose which Department the new Role belongs to",
+                choices: departmentValues
+            }
+        ]).then(answers => {
+            connection.query("INSERT INTO org_roles (title, salary, department_id) VALUES (?, ?, ?)", [answers.roleInput, answers.salaryInput, answers.departmentChoice], function(err, results) {
+                if (err) throw err;
+            })
+            console.log(`Added ${answers.roleInput} to the list of current Roles, with a salary of $${answers.salaryInput} per year \n`);
+            runPrompts();
+        });
+    })
+
+    
 }
 
 function addEmployees() {
