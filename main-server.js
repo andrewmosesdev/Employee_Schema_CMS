@@ -68,22 +68,22 @@ const prompts = [
     }
 ];
 
-async function runPrompts() {
-    await inquirer.prompt(prompts).then(answers => {
+function runPrompts() {
+    inquirer.prompt(prompts).then(answers => {
         if(answers.initialPrompt === "Exit") {
             connection.end();
         }
         else if(answers.viewWhich === "Departments") {
             // show all department names
-            viewDepartments();
+            viewData("departments");
         }
         else if(answers.viewWhich === "Roles") {
             // show role information
-            viewRoles();
+            viewData("org_roles")
         }
         else if(answers.viewWhich === "Employees") {
             // show employee information
-            viewEmployees();
+            viewData("employees")
         }
         else if(answers.addToChoice === "Departments") {
             // need a function that will add to the "departments" table, maybe add new inquirer prompt
@@ -102,32 +102,17 @@ async function runPrompts() {
     });
 };
 
-function viewDepartments() {
-     connection.query("SELECT * FROM departments"), function(err, results) {
+// catch all function for viewing tables made with help from @daneb91
+function viewData(table) {
+    return connection.query(`SELECT * FROM ${table}`, function(err, results) {
         if (err) throw err;
         console.table(results);
         runPrompts();
-    }
-};
-
-function viewRoles() {
-    connection.query("SELECT title, salary FROM org_roles"), function(err, res) {
-        if (err) throw err;
-        console.log(res);
-        runPrompts();
-    }
-};
-
-function viewEmployees() {
-    connection.query("SELECT first_name, last_name FROM employees"), function(err, res) {
-        if (err) throw err;
-        console.log(res);
-        runPrompts();
-    }
+    })
 }
 
-async function addDepartments() {
-    await inquirer
+function addDepartments() {
+    inquirer
     .prompt(
         {
             type: "input",
@@ -145,8 +130,8 @@ async function addDepartments() {
     
 };
 
-async function addRoles() {
-    await inquirer
+function addRoles() {
+    inquirer
     .prompt([
         {
             type: "input",
@@ -167,14 +152,8 @@ async function addRoles() {
     });
 }
 
-async function addEmployees() {
-
-    // const currentRoles = [];
-    // connection.query("SELECT title FROM org_roles"), function(err, result) {
-    //     if (err) throw err;
-    //     currentRoles.push(result)        
-    // }
-    await inquirer
+function addEmployees() {
+    inquirer
     .prompt([
         {
             type: "input",
@@ -186,17 +165,10 @@ async function addEmployees() {
             name: "employeeLastName",
             message: "Enter the last name of the Employee you would like to add"
         },
-        // {
-        //     type: "list",
-        //     name: "newEmployeeRole",
-        //     message: "Which Role does this Employee belong in?",
-        //     choices: currentRoles
-        // }
     ]).then(answers => {
         connection.query("INSERT INTO employees (first_name, last_name) VALUES (?, ?)", [answers.employeeFirstName, answers.employeeLastName], function(err, results) {
             if (err) throw err;
-            
-            
+            // console.table(results)
         })
         console.log(`Added ${answers.employeeFirstName} ${answers.employeeLastName} to the current list of Employees \n`)
         runPrompts();
