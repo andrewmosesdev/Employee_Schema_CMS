@@ -25,7 +25,7 @@ const prompts = [
         type: "list",
         name: "initialPrompt",
         message: "What would you like to do?",
-        choices: ["View", "Add", "Update", "Delete", "Exit"]
+        choices: ["View", "Add", "Update", "Exit"]
     },
     {
         // this object only procs if the user chooses "view"
@@ -46,25 +46,6 @@ const prompts = [
         when: answers => {
             return answers.initialPrompt === "Add"
         }
-    },
-    {
-        // this object only procs if the user chooses "update"
-        type: "list",
-        name: "updateChoice",
-        message: "Which business area would you like to make updates to?",
-        choices: ["Roles", "Managers", "Exit"],
-        when: answers => {
-            return answers.initialPrompt === "Update"
-        }
-    },
-    {
-        type: "list",
-        name: "deleteChoice",
-        message: "Which business area would you like to make deletions in?",
-        choices: ["Departments", "Roles", "Employees", "Exit"],
-        when: answers => {
-            return answers.initialPrompt === "Delete"
-        }
     }
 ];
 
@@ -72,6 +53,9 @@ function runPrompts() {
     inquirer.prompt(prompts).then(answers => {
         if(answers.initialPrompt === "Exit") {
             connection.end();
+        }
+        else if(answers.initialPrompt === "Update") {
+            updateEmployee();
         }
         else if(answers.viewWhich === "Departments") {
             // show all department names
@@ -231,3 +215,48 @@ function addEmployees() {
 
     })
 };
+
+// created with guidance from @alligatormonday (Joey Jepson)
+function updateEmployee() {
+    connection.query("SELECT * FROM employees", function(err, existingEmployeeResults) {
+        if (err) throw err;
+        const existingEmployees = existingEmployeeResults.map(element => ({
+            name: element.first_name + " " + element.last_name,
+            value: element.id
+        }))
+
+        connection.query("SELECT * FROM org_roles", function(err, roleResults) {
+            if (err) throw err;
+
+            const existingRoles = roleResults.map(element2 => ({
+                name: element2.title,
+                value: element2.id
+            }))
+
+            inquirer
+            .prompt([
+                {
+                    type: "list",
+                    name: "toBeUpdated",
+                    message: "Which employee would you like to make updates to?",
+                    choices: existingEmployees
+                },
+                {
+                    type: "list",
+                    name: "updateCurrentRole",
+                    message: "Choose a new Role for the Employee",
+                    choices: existingRoles
+                }
+            ]).then(answers => {
+                connection.query("UPDATE employees SET org_role_id = ? WHERE id = ?", [answers.toBeUpdated, answers.updateCurrentRole], function(err, data) {
+                    if (err) throw err;
+                    // console.table(data);
+                    runPrompts();
+                })
+            })
+
+        })
+
+    })
+};
+
