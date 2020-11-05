@@ -6,7 +6,7 @@
   This command line application utilizes a database structure in MySql to allow the creation and updates of an organization. You can add, view, and update employees, roles, and departments within the organization via the command line by following prompts built out with Inquirer. 
   
   ## Demo:
-  ![Demo]()
+  ![Demo](https://github.com/andrewmosesdrive/Employee_Schema_CMS/blob/main/Assets/Employee_Schema.gif?raw=true)
 
 
   
