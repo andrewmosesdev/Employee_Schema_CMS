@@ -136,7 +136,7 @@ function addRoles() {
     connection.query("SELECT * FROM departments", function(err, results) {
         if (err) throw err;
 
-        // create variable and use map method to pull results into objects; must use name/value pair in order to be displayed through inquirer
+        // use map method to pull results and create array within new var; must use name/value pair in objects in order to be displayed properly through inquirer 
         const departmentValues = results.map(element => ({
             name: element.dept_name,
             value: element.id
@@ -174,24 +174,60 @@ function addRoles() {
 }
 
 function addEmployees() {
-    inquirer
-    .prompt([
-        {
-            type: "input",
-            name: "employeeFirstName",
-            message: "Enter the first name of the Employee you would like to add"
-        },
-        {
-            type: "input",
-            name: "employeeLastName",
-            message: "Enter the last name of the Employee you would like to add"
-        },
-    ]).then(answers => {
-        connection.query("INSERT INTO employees (first_name, last_name) VALUES (?, ?)", [answers.employeeFirstName, answers.employeeLastName], function(err, results) {
+
+    connection.query("SELECT * FROM org_roles", function(err, results) {
+        if (err) throw err;
+
+        // use map method to pull results and create array within new var; must use name/value pair in objects in order to be displayed properly through inquirer 
+        const roleValues = results.map(element => ({
+            name: element.title,
+            value: element.id
+        }));
+
+        connection.query("SELECT * FROM employees", function(err, employeeResults) {
             if (err) throw err;
-            // console.table(results)
+
+            const employeesList = employeeResults.map(employeeElement => ({
+                name: employeeElement.first_name + " " + employeeElement.last_name,
+                value: employeeElement.id
+            }))
+        
+
+            inquirer
+            .prompt([
+                {
+                    type: "input",
+                    name: "employeeFirstName",
+                    message: "Enter the first name of the Employee you would like to add"
+                },
+                {
+                    type: "input",
+                    name: "employeeLastName",
+                    message: "Enter the last name of the Employee you would like to add"
+                },
+                {
+                    type: "list",
+                    name: "employeeRole",
+                    message: "Choose which Role to assign this Employee",
+                    choices: roleValues
+                },
+                {
+                    type: "list",
+                    name: "chooseManager",
+                    message: "Choose the Manager of this Employee",
+                    choices: employeesList
+
+                }
+            ]).then(answers => {
+                connection.query("INSERT INTO employees (first_name, last_name, org_role_id, manager_id) VALUES (?, ?, ?, ?)", [answers.employeeFirstName, answers.employeeLastName, answers.employeeRole, answers.chooseManager], function(err, results) {
+                    if (err) throw err;
+                    // console.table(results)
+                })
+                console.log(`Added ${answers.employeeFirstName} ${answers.employeeLastName} to the current list of Employees \n`)
+                runPrompts();
+            });
+
         })
-        console.log(`Added ${answers.employeeFirstName} ${answers.employeeLastName} to the current list of Employees \n`)
-        runPrompts();
-    });
-}
+
+    })
+};
